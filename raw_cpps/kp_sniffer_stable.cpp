@@ -84,6 +84,20 @@ public:
 	u_int	op_pad;			// Option + Padding
 };
 
+/* ARP header */
+class arp_header {
+public:
+	u_short	hard_type;		  // Hardware type
+	u_short proto;			  // Protocol type 
+	u_char hard_len;          // Hardware length
+	u_char proto_len;         // Protocol length
+	u_short operation;        // Operation
+	mac_address sender_mac;   // Sender hardware address
+	ipv4_address sender_ip;   // Sender protocol address
+	mac_address target_mac;   // Target hardware address
+	ipv4_address target_ip;   // Target protocol address
+};
+
 /* UDP header*/
 class udp_header {
 public:
@@ -158,7 +172,6 @@ void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char
 		ip_h->saddr.print_ip_addr();
 		std::cout << " -> ";
 		ip_h->daddr.print_ip_addr();
-
 		//udp
 		if (static_cast<int>(ip_h->proto) == 17) {
 			parce_udp(header, pkt_data, ip_header_len);
@@ -166,6 +179,14 @@ void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char
 		//tcp
 		else if (static_cast<int>(ip_h->proto) == 6) {
 			parce_tcp(header, pkt_data, ip_header_len);
+		}
+		//icmp
+		else if (static_cast<int>(ip_h->proto) == 1) {
+			std::cout << "\nicmp\n";
+		}
+		//igmp
+		else if (static_cast<int>(ip_h->proto) == 2) {
+			std::cout << "\nigmp\n";
 		}
 		else {
 			std::cout << "\nParcing is not supported now ;(\n";
@@ -177,28 +198,34 @@ void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char
 	}
 	//arp
 	else if (eth_h->protocol_type == 1544) {
-		std::cout << "\narp\n";
+		std::cout << "\nAddress Resolution Protocol, ";
+		arp_header* arp_h = (arp_header*)(pkt_data + 14);
+		arp_h->operation = ntohs(arp_h->operation);
+		arp_h->hard_type = ntohs(arp_h->hard_type);
+		std::cout << arp_h->operation << ' ';
+		if (arp_h->hard_type != 1 || arp_h->proto != 8) {
+			std::cout << "\nParcing is not supported now ;(\n";
+			return;
+		}
+		if (arp_h->operation == 1) {
+			std::cout << "(request)\nWho has ";
+			arp_h->target_ip.print_ip_addr();
+			std::cout << "? Tell ";
+			arp_h->sender_ip.print_ip_addr();
+			std::cout << std::endl;
+		}
+		else {
+			std::cout << "(reply)\n";
+			arp_h->sender_ip.print_ip_addr();
+			std::cout << " is at ";
+			arp_h->sender_mac.print_mac_addr();
+			std::cout << std::endl;
+		}
 	}
 	else {
 		std::cout << "\nParcing is not supported now ;(\n";
 	}
 	//icmp
-	//igmp
-
-	//TODO save all data
-	std::string data;
-	data.resize(header->len);
-	for (size_t i = 0; i < data.size(); i++) {
-		if (pkt_data[i] > 32 && pkt_data[i] < 127)
-			data[i] = pkt_data[i];
-		else if (pkt_data[i] == 176)
-			data[i] = ' ';
-		else
-			data[i] = static_cast<u_char>(176);
-	}
-
-	///std::cout << "All data: " << data << std::endl;
-
 	std::cout << std::endl;
 }
 
@@ -212,7 +239,7 @@ int filter_on(pcap_if_t* device, pcap_t* handle) {
 		netmask = 0xffffff;
 
 	//compile the filter
-	if (pcap_compile(handle, &fcode, "udp", 1, netmask) < 0) {
+	if (pcap_compile(handle, &fcode, "igmp", 1, netmask) < 0) {
 		std::cerr << "\nUnable to compile the packet filter. Check the syntax.\n";
 		return -1;
 	}
