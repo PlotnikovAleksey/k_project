@@ -7,7 +7,9 @@ option(BUILD_TESTS "Build tests" OFF)
 
 project(analysis_form_dump)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmakefile/FindPCAP.cmake)
+include(FindPCAP.cmake)
+
+# ${CMAKE_CURRENT_SOURCE_DIR}/cmakefile/
 
 add_executable(analysis_form_dump STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_analysis_from_dump.cpp
