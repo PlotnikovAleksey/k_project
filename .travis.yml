@@ -1,0 +1,11 @@
+os: linux
+language: 
+- cpp
+
+jobs:
+  include:
+  - name: "building"
+    script:
+#    - cmake -H. -B_build -DBUILD_TESTS=ON
+    - cmake --build _build
+    - cmake --build _build --target analysis_form_dump

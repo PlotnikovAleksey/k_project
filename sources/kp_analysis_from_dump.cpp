@@ -53,7 +53,7 @@ int main() {
 		PCAP_SRC_FILE,	                                            // we want to open a file
 		NULL,			                                            // remote host
 		NULL,			                                            // port on the remote host
-		"../../kp_sniffer_stable/kp_sniffer_stable/dump.txt",		// name of the file we want to open
+		"../dumps/ip_and_arp_dump.txt",		// name of the file we want to open
 		errbuf			                                            // error buffer
 	) != 0) {
 		std::cerr << "\nError creating a source string\n";
