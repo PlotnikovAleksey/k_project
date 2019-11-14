@@ -24,7 +24,10 @@ void dispatcher_handler(u_char *temp1, const struct pcap_pkthdr *header, const u
 	/* Print the packet */
 	std::cout << "All data in hex:\n";
 	for (size_t i = 1; (i < header->caplen + 1); i++) {
-		std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(pkt_data[i - 1]);
+		std::cout.unsetf(std::ios::dec);
+		std::cout.setf(std::ios::hex);
+		std::cout << std::setw(2) << std::setfill('0') << static_cast<int>(pkt_data[i - 1]);
+		std::cout.unsetf(std::ios::hex);
 		std::cout << ' ';
 		if ((i % LINE_LEN) == 0)
 			std::cout << std::endl;
@@ -53,7 +56,7 @@ int main() {
 		PCAP_SRC_FILE,	                                            // we want to open a file
 		NULL,			                                            // remote host
 		NULL,			                                            // port on the remote host
-		"../dumps/ip_and_arp_dump.txt",		// name of the file we want to open
+		"../../kp_sniffer_stable/kp_sniffer_stable/dump.txt",		// name of the file we want to open
 		errbuf			                                            // error buffer
 	) != 0) {
 		std::cerr << "\nError creating a source string\n";

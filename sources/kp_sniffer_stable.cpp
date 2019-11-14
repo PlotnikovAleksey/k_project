@@ -120,10 +120,18 @@ public:
 	u_short urgent_ptr;             // Указатель важности
 };
 
-void parce_udp(const struct pcap_pkthdr *header, const u_char *pkt_data, u_int prev_header_len) {
+/* IGMP header*/
+class igmp_header {
+public:
+	u_char type;                 // Тип
+	u_char max_resp_code;        // Код макс. ответа
+	u_short crc;                 // Контрольная сумма
+	ipv4_address group_address;  // Групповой адрес
+};
+
+void parce_udp(const u_char *pkt_data, u_int prev_header_len) {
 	u_short sport, dport, len;
-	udp_header* udp_h;
-	udp_h = (udp_header *)((u_char*)pkt_data + 14 + prev_header_len);
+	udp_header* udp_h = (udp_header *)((u_char*)pkt_data + 14 + prev_header_len);
 	sport = ntohs(udp_h->sport);
 	dport = ntohs(udp_h->dport);
 	len = ntohs(udp_h->len);
@@ -132,8 +140,7 @@ void parce_udp(const struct pcap_pkthdr *header, const u_char *pkt_data, u_int p
 
 void parce_tcp(const struct pcap_pkthdr *header, const u_char *pkt_data, u_int prev_header_len) {
 	u_short sport, dport;
-	tcp_header* tcp_h;
-	tcp_h = (tcp_header *)((u_char*)pkt_data + 14 + prev_header_len);
+	tcp_header* tcp_h = (tcp_header *)((u_char*)pkt_data + 14 + prev_header_len);
 	sport = ntohs(tcp_h->sport);
 	dport = ntohs(tcp_h->dport);
 	u_short different_info = ntohs(tcp_h->different_info);
@@ -141,6 +148,30 @@ void parce_tcp(const struct pcap_pkthdr *header, const u_char *pkt_data, u_int p
 	u_short tcp_header_len = (different_info >> 12) * 4;
 	u_short tcp_payload_len = header->len - 14 - prev_header_len - tcp_header_len;
 	std::cout << "\nTransmission Control Protocol, Scr port: " << sport << ", Dst port: " << dport << ", Win: " << window_size << ", Payload len: " << tcp_payload_len << "\n";
+}
+
+void parce_igmp(const u_char *pkt_data, u_int prev_header_len) {
+	igmp_header* igmpv4_h = (igmp_header *)((u_char*)pkt_data + 14 + prev_header_len);
+	std::cout << "\nInternet Group Management Protocol";
+	if (igmpv4_h->type == 0x11) {
+		std::cout << "\nMembership query, ";
+	}
+	else if (igmpv4_h->type == 0x16 || igmpv4_h->type == 0x17) {
+		std::cout << " version 2\n";
+		if (igmpv4_h->type == 0x16)
+			std::cout << "Membership report, ";
+		else
+			std::cout << "Leave Group, ";
+	}
+	else if (igmpv4_h->type == 0x22) {
+		std::cout << " version 3\nMembership Report, ";
+	}
+	else {
+		std::cout << " unknown version\n";
+	}
+	std::cout << "multicast address: ";
+	igmpv4_h->group_address.print_ip_addr();
+	std::cout << std::endl;
 }
 
 size_t packet_num = 0;
@@ -174,7 +205,7 @@ void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char
 		ip_h->daddr.print_ip_addr();
 		//udp
 		if (static_cast<int>(ip_h->proto) == 17) {
-			parce_udp(header, pkt_data, ip_header_len);
+			parce_udp(pkt_data, ip_header_len);
 		}
 		//tcp
 		else if (static_cast<int>(ip_h->proto) == 6) {
@@ -186,7 +217,7 @@ void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char
 		}
 		//igmp
 		else if (static_cast<int>(ip_h->proto) == 2) {
-			std::cout << "\nigmp\n";
+			parce_igmp(pkt_data, ip_header_len);
 		}
 		else {
 			std::cout << "\nParcing is not supported now ;(\n";
