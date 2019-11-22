@@ -1,17 +1,48 @@
-os: linux
-language: 
-- cpp
+sudo: required
+language: cpp
 
-jobs:
+matrix:
   include:
-  - name: "building"
-    before_install:
-    - sudo apt-get update -qq
-    script:
-     - mkdir build
-     - cd build
-     - cmake -DCMAKE_CXX_COMPILER=$COMPILER .. && make
-     - ./runtests_cpppcap
-#    - cmake -H. -B_build -DBUILD_TESTS=ON
-#    - cmake --build _build
-#    - cmake --build _build --target analysis_form_dump
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env: COMPILER=g++-4.9
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env: COMPILER=g++-5
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env: COMPILER=clang++-3.6
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+      env: COMPILER=clang++-3.7
+
+before_install:
+  - sudo apt-get update -qq
+# Build steps
+script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Release .. && make
+  - ./analysis_from_dump
