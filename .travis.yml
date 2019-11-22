@@ -1,6 +1,7 @@
 sudo: required
-#os: linux
-language: cpp
+os: linux
+language: 
+- cpp
 
 #before_install:
 #- sudo apt-get update -qq
