@@ -1,4 +1,5 @@
-﻿#include <stdio.h>
+﻿#define _CRT_SECURE_NO_WARNINGS
+
 #include "pcap.h"
 #include <time.h>
 #include <iostream>
@@ -13,12 +14,12 @@ void dispatcher_handler(u_char *temp1, const struct pcap_pkthdr *header, const u
 	//Unused variable
 	(void)temp1;
 
-	struct tm ltime;
+	struct tm* ltime;
 	char timestr[16];
 	time_t local_tv_sec;
 	local_tv_sec = header->ts.tv_sec;
-	localtime_s(&ltime, &local_tv_sec);
-	strftime(timestr, sizeof(timestr), "%H:%M:%S", &ltime);
+	ltime = localtime(&local_tv_sec);
+	strftime(timestr, sizeof(timestr), "%H:%M:%S", ltime);
 	std::cout << ++packet_num << ") Capture time is " << timestr << ',' << " length of the packet: " << header->len << std::endl;
 
 	/* Print the packet */
