@@ -26,7 +26,8 @@ target_include_directories(kp_analysis_from_dump
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-add_library (cpppcap STATIC kp_analysis_from_dump ${LIBPCAP_STATIC})
+add_library (cpppcap STATIC ${LIBPCAP_STATIC})
+target_link_libraries(cpppcap kp_analysis_from_dump)
 add_library (pcap STATIC IMPORTED GLOBAL)
 set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
 link_directories(${LIBPCAP})
@@ -36,6 +37,7 @@ add_executable(test
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/simple.cpp
 )
 
+target_link_libraries(test kp_analysis_from_dump)
 target_link_libraries(test cpppcap)
 target_link_libraries(test pcap)
 
