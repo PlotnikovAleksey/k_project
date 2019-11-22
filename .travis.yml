@@ -1,9 +1,9 @@
-sudo: required
+#sudo: required
 os: linux
 language: cpp
 
-before_install:
-- sudo apt-get update -qq
+#before_install:
+#- sudo apt-get update -qq
 jobs:
   include:
    - name: "building"
