@@ -1,5 +1,5 @@
-#sudo: required
-os: linux
+sudo: required
+#os: linux
 language: cpp
 
 #before_install:
