@@ -13,6 +13,11 @@ project(analysis_form_dump)
 set(LIBPCAP ${CMAKE_CURRENT_SOURCE_DIR}/libpcap)  
 set(LIBPCAP_STATIC ${CMAKE_CURRENT_SOURCE_DIR}/libpcap/libpcap.a)
 
+add_custom_command(
+    OUTPUT  ${LIBPCAP_STATIC}
+    COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
+)
+
 add_library (cpppcap STATIC ${LIBPCAP_STATIC})
 add_library (pcap STATIC IMPORTED GLOBAL)
 set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
