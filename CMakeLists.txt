@@ -7,15 +7,21 @@ option(BUILD_TESTS "Build tests" OFF)
 
 project(analysis_form_dump)
 
-include(FindPCAP.cmake)
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter -fsanitize=address")
+#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter")
 
-# ${CMAKE_CURRENT_SOURCE_DIR}/cmakefile/
+set(LIBPCAP ${CMAKE_CURRENT_SOURCE_DIR}/libpcap)  
+set(LIBPCAP_STATIC ${CMAKE_CURRENT_SOURCE_DIR}/libpcap/libpcap.a)
+
+add_library (pcap STATIC IMPORTED GLOBAL)
+set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
+link_directories(${LIBPCAP})
 
 add_executable(analysis_form_dump STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_analysis_from_dump.cpp
 )
 
-target_link_libraries(analysis_form_dump ${PCAP_LIBRARY})
+target_link_libraries(analysis_form_dump pcap)
 
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
