@@ -50,7 +50,7 @@ void dispatcher_handler(u_char *temp1, const struct pcap_pkthdr *header, const u
 int main_f() {
 	pcap_t *fp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	char source[] = "../../kp_sniffer_stable/kp_sniffer_stable/dump.txt";
+	char source[] = "../../kp_sniffer_stable/kp_sniffer_stable/ip_and_arp_dump.txt";
 
 	/* Open the capture file */
 	if ((fp = pcap_open_offline(source,			 // name of the device
