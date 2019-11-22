@@ -1,2 +1,2 @@
-# k_project
+# Курсовой проект по ТиМП
 My very first full project
