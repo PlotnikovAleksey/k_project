@@ -18,7 +18,15 @@ add_custom_command(
     COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
 )
 
-add_library (cpppcap STATIC include/kp_analysis_from_dump.hpp sources/kp_analysis_from_dump.cpp ${LIBPCAP_STATIC})
+add_library(kp_analysis_from_dump STATIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_analysis_from_dump.cpp
+)
+
+target_include_directories(kp_analysis_from_dump 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+add_library (cpppcap STATIC kp_analysis_from_dump ${LIBPCAP_STATIC})
 add_library (pcap STATIC IMPORTED GLOBAL)
 set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
 link_directories(${LIBPCAP})
