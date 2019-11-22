@@ -1,4 +1,4 @@
-﻿#include "kp_analysis_from_dump.hpp"
+﻿#include "../include/kp_analysis_from_dump.hpp"
 
 int main() {
 	main_f();
