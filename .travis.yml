@@ -5,8 +5,8 @@ language:
 jobs:
   include:
   - name: "building"
-  before_install:
-  - sudo apt-get update -qq
+    before_install:
+    - sudo apt-get update -qq
     script:
     - cmake -H. -B_build -DBUILD_TESTS=ON
     - cmake --build _build
