@@ -1,6 +1,6 @@
 ﻿#include <kp_analysis_from_dump.hpp>
 
 int main() {
-	main_f();
-	return 0;
+	char source[] = "dumps/ip_and_arp_dump.txt";
+	return processing(source);
 }

@@ -47,10 +47,9 @@ void dispatcher_handler(u_char *temp1, const struct pcap_pkthdr *header, const u
 	std::cout << "\n\nAll data in ascii:\n" << data << "\n\n";
 }
 
-int main_f() {
+int processing(char* source) {
 	pcap_t *fp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	char source[] = "dumps/ip_and_arp_dump.txt";
 
 	/* Open the capture file */
 	if ((fp = pcap_open_offline(source,			 // name of the device
