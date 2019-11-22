@@ -50,28 +50,11 @@ void dispatcher_handler(u_char *temp1, const struct pcap_pkthdr *header, const u
 int main_f() {
 	pcap_t *fp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	char source[PCAP_BUF_SIZE];
-
-	/* Create the source string according to the new Npcap syntax */
-	if (pcap_createsrcstr(source,			                        // variable that will keep the source string
-		PCAP_SRC_FILE,	                                            // we want to open a file
-		NULL,			                                            // remote host
-		NULL,			                                            // port on the remote host
-		"../../kp_sniffer_stable/kp_sniffer_stable/dump.txt",		// name of the file we want to open
-		errbuf			                                            // error buffer
-	) != 0) {
-		std::cerr << "\nError creating a source string\n";
-		return -1;
-	}
+	char source[] = "../../kp_sniffer_stable/kp_sniffer_stable/dump.txt";
 
 	/* Open the capture file */
-	if ((fp = pcap_open(source,			 // name of the device
-		65536,			                 // portion of the packet to capture
-										 // 65536 guarantees that the whole packet will be captured on all the link layers
-		PCAP_OPENFLAG_PROMISCUOUS, 	     // promiscuous mode
-		1000,				             // read timeout
-		NULL,				             // authentication on the remote machine
-		errbuf			                 // error buffer
+	if ((fp = pcap_open_offline(source,			 // name of the device
+		errbuf			 // error buffer
 	)) == NULL) {
 		std::cerr << "\nUnable to open the file " << source << '\n';
 		return -1;
