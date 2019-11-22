@@ -17,6 +17,8 @@ add_library (pcap STATIC IMPORTED GLOBAL)
 set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
 link_directories(${LIBPCAP})
 
+add_subdirectory(libpcap)
+
 add_executable(analysis_from_dump
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_analysis_from_dump.cpp
 )
