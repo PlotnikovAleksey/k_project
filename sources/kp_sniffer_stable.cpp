@@ -1,13 +1,14 @@
 ﻿#include <iostream>
 #include <iomanip>
 #include <pcap.h>
-#include <Winsock2.h>
+//#include <Winsock2.h>
 #include <tchar.h>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <algorithm>
 #include <time.h>
+#include <cstdint>
 #define HAVE_REMOTE
 //#include <Ws2tcpip.h>
 //#include <WS2tcpip.h>
@@ -32,12 +33,12 @@ BOOL LoadNpcapDlls() {
 /* 6 bytes MAC address */
 class mac_address {
 public:
-	u_char byte1;
-	u_char byte2;
-	u_char byte3;
-	u_char byte4;
-	u_char byte5;
-	u_char byte6;
+	uint8_t byte1;
+	uint8_t byte2;
+	uint8_t byte3;
+	uint8_t byte4;
+	uint8_t byte5;
+	uint8_t byte6;
 
 	void print_mac_addr() {
 		std::cout.unsetf(std::ios::dec);
@@ -51,16 +52,16 @@ class ethernet_header {
 public:
 	mac_address dst;
 	mac_address scr;
-	u_short protocol_type;
+	uint16_t protocol_type;
 };
 
 /* 4 bytes IP address */
 class ipv4_address {
 public:
-	u_char byte1;
-	u_char byte2;
-	u_char byte3;
-	u_char byte4;
+	uint8_t byte1;
+	uint8_t byte2;
+	uint8_t byte3;
+	uint8_t byte4;
 
 	void print_ip_addr() {
 		std::cout << static_cast<int>(byte1) << '.' << static_cast<int>(byte2) <<
@@ -71,27 +72,27 @@ public:
 /* IPv4 header */
 class ipv4_header {
 public:
-	u_char	ver_ihl;		// Version (4 bits) + Internet header length (4 bits)
-	u_char	tos;			// Type of service 
-	u_short tlen;			// Total length 
-	u_short identification; // Identification
-	u_short flags_fo;		// Flags (3 bits) + Fragment offset (13 bits)
-	u_char	ttl;			// Time to live
-	u_char	proto;			// Protocol
-	u_short crc;			// Header checksum
+	uint8_t	ver_ihl;		// Version (4 bits) + Internet header length (4 bits)
+	uint8_t	tos;			// Type of service 
+	uint16_t tlen;			// Total length 
+	uint16_t identification; // Identification
+	uint16_t flags_fo;		// Flags (3 bits) + Fragment offset (13 bits)
+	uint8_t	ttl;			// Time to live
+	uint8_t	proto;			// Protocol
+	uint16_t crc;			// Header checksum
 	ipv4_address saddr;		// Source address
 	ipv4_address daddr;		// Destination address
-	u_int	op_pad;			// Option + Padding
+	uint32_t op_pad;			// Option + Padding
 };
 
 /* ARP header */
 class arp_header {
 public:
-	u_short	hard_type;		  // Hardware type
-	u_short proto;			  // Protocol type 
-	u_char hard_len;          // Hardware length
-	u_char proto_len;         // Protocol length
-	u_short operation;        // Operation
+	uint16_t	hard_type;		  // Hardware type
+	uint16_t proto;			  // Protocol type 
+	uint8_t hard_len;          // Hardware length
+	uint8_t proto_len;         // Protocol length
+	uint16_t operation;        // Operation
 	mac_address sender_mac;   // Sender hardware address
 	ipv4_address sender_ip;   // Sender protocol address
 	mac_address target_mac;   // Target hardware address
@@ -101,83 +102,259 @@ public:
 /* UDP header*/
 class udp_header {
 public:
-	u_short sport;			// Source port
-	u_short dport;			// Destination port
-	u_short len;			// Datagram length
-	u_short crc;			// Checksum
+	uint16_t sport;			// Source port
+	uint16_t dport;			// Destination port
+	uint16_t len;			// Datagram length
+	uint16_t crc;			// Checksum
 };
 
 /* TCP header*/
 class tcp_header {
 public:
-	u_short sport;			        // Source port
-	u_short dport;			        // Destination port
-	u_int seq_number;               // Порядковый номер
-	u_int acknowledgment_number;    // Номер подтверждения
-	u_short different_info;         // 0 - 3 Длина заголовка, 4 - 9 Зарезервировано, 10 - 15 Флаги
-	u_short window_size;            // Размер Окна
-	u_short crc;			        // Checksum
-	u_short urgent_ptr;             // Указатель важности
+	uint16_t sport;			        // Source port
+	uint16_t dport;			        // Destination port
+	uint32_t seq_number;               // Порядковый номер
+	uint32_t acknowledgment_number;    // Номер подтверждения
+	uint16_t different_info;         // 0 - 3 Длина заголовка, 4 - 9 Зарезервировано, 10 - 15 Флаги
+	uint16_t window_size;            // Размер Окна
+	uint16_t crc;			        // Checksum
+	uint16_t urgent_ptr;             // Указатель важности
 };
 
 /* IGMP header*/
 class igmp_header {
 public:
-	u_char type;                 // Тип
-	u_char max_resp_code;        // Код макс. ответа
-	u_short crc;                 // Контрольная сумма
+	uint8_t type;                 // Тип
+	uint8_t max_resp_code;        // Код макс. ответа
+	uint16_t crc;                 // Контрольная сумма
 	ipv4_address group_address;  // Групповой адрес
 };
 
-void parce_udp(const u_char *pkt_data, u_int prev_header_len) {
-	u_short sport, dport, len;
-	udp_header* udp_h = (udp_header *)((u_char*)pkt_data + 14 + prev_header_len);
+/* ICMP header*/
+class icmp_header {
+public:
+	uint8_t type;                 // Тип
+	uint8_t code;                 // Код
+	uint16_t crc;                 // Контрольная сумма
+};
+
+void parce_udp(const uint8_t *pkt_data, uint32_t prev_header_len) {
+	uint16_t sport, dport, len;
+	udp_header* udp_h = (udp_header *)((uint8_t*)pkt_data + 14 + prev_header_len);
 	sport = ntohs(udp_h->sport);
 	dport = ntohs(udp_h->dport);
 	len = ntohs(udp_h->len);
 	std::cout << "\nUser Datagram Protocol, Scr port: " << sport << ", Dst port: " << dport << ", Len: " << len << "\n";
 }
 
-void parce_tcp(const struct pcap_pkthdr *header, const u_char *pkt_data, u_int prev_header_len) {
-	u_short sport, dport;
-	tcp_header* tcp_h = (tcp_header *)((u_char*)pkt_data + 14 + prev_header_len);
+void parce_tcp(const struct pcap_pkthdr *header, const uint8_t *pkt_data, uint32_t prev_header_len) {
+	uint16_t sport, dport;
+	tcp_header* tcp_h = (tcp_header *)((uint8_t*)pkt_data + 14 + prev_header_len);
 	sport = ntohs(tcp_h->sport);
 	dport = ntohs(tcp_h->dport);
-	u_short different_info = ntohs(tcp_h->different_info);
-	u_short window_size = ntohs(tcp_h->window_size);
-	u_short tcp_header_len = (different_info >> 12) * 4;
-	u_short tcp_payload_len = header->len - 14 - prev_header_len - tcp_header_len;
+	uint16_t different_info = ntohs(tcp_h->different_info);
+	uint16_t window_size = ntohs(tcp_h->window_size);
+	uint16_t tcp_header_len = (different_info >> 12) * 4;
+	uint16_t tcp_payload_len = header->len - 14 - prev_header_len - tcp_header_len;
 	std::cout << "\nTransmission Control Protocol, Scr port: " << sport << ", Dst port: " << dport << ", Win: " << window_size << ", Payload len: " << tcp_payload_len << "\n";
 }
 
-void parce_igmp(const u_char *pkt_data, u_int prev_header_len) {
-	igmp_header* igmpv4_h = (igmp_header *)((u_char*)pkt_data + 14 + prev_header_len);
+void parce_igmp(const uint8_t *pkt_data, uint32_t prev_header_len) {
+	igmp_header* igmp_h = (igmp_header *)((uint8_t*)pkt_data + 14 + prev_header_len);
 	std::cout << "\nInternet Group Management Protocol";
-	if (igmpv4_h->type == 0x11) {
+	if (igmp_h->type == 0x11) {
 		std::cout << "\nMembership query, ";
 	}
-	else if (igmpv4_h->type == 0x16 || igmpv4_h->type == 0x17) {
+	else if (igmp_h->type == 0x16 || igmp_h->type == 0x17) {
 		std::cout << " version 2\n";
-		if (igmpv4_h->type == 0x16)
+		if (igmp_h->type == 0x16)
 			std::cout << "Membership report, ";
 		else
 			std::cout << "Leave Group, ";
 	}
-	else if (igmpv4_h->type == 0x22) {
+	else if (igmp_h->type == 0x22) {
 		std::cout << " version 3\nMembership Report, ";
 	}
 	else {
 		std::cout << " unknown version\n";
 	}
 	std::cout << "multicast address: ";
-	igmpv4_h->group_address.print_ip_addr();
+	igmp_h->group_address.print_ip_addr();
+	std::cout << std::endl;
+}
+
+void parce_icmp(const uint8_t *pkt_data, uint32_t prev_header_len) {
+	icmp_header* icmp_h = (icmp_header*)((uint8_t*)pkt_data + 14 + prev_header_len);
+	std::cout << "\nInternet Control Message Protocol, ";
+	if (static_cast<int>(icmp_h->type) == 0 && static_cast<int>(icmp_h->code) == 0) {
+		std::cout << "Echo Reply";
+	}
+	else if (static_cast<int>(icmp_h->type) == 3) {
+		std::cout << "Destination Unreachable (";
+		switch (static_cast<int>(icmp_h->code)) {
+		case 0:
+			std::cout << "Destination network unreachable";
+			break;
+		case 1:
+			std::cout << "Destination host unreachable";
+			break;
+		case 2:
+			std::cout << "Destination protocol unreachable";
+			break;
+		case 3:
+			std::cout << "Destination port unreachable";
+			break;
+		case 4:
+			std::cout << "Fragmentation required";
+			break;
+		case 5:
+			std::cout << "Source route failed";
+			break;
+		case 6:
+			std::cout << "Destination network unknown";
+			break;
+		case 7:
+			std::cout << "Destination host unknown";
+			break;
+		case 8:
+			std::cout << "Source host isolated";
+			break;
+		case 9:
+			std::cout << "Network administratively prohibited";
+			break;
+		case 10:
+			std::cout << "Host administratively prohibited";
+			break;
+		case 11:
+			std::cout << "Network unreachable for ToS";
+			break;
+		case 12:
+			std::cout << "Host unreachable for ToS";
+			break;
+		case 13:
+			std::cout << "Communication administratively prohibited";
+			break;
+		case 14:
+			std::cout << "Host Precedence Violation";
+			break;
+		case 15:
+			std::cout << "Precedence cutoff in effect";
+			break;
+		default:
+			std::cout << "Unknown code";
+			break;
+		}
+		std::cout << ')';
+	}
+	else if (static_cast<int>(icmp_h->type) == 5) {
+		std::cout << "Redirect Message (";
+		switch (static_cast<int>(icmp_h->code)) {
+		case 0:
+			std::cout << "Redirect Datagram for the Network";
+			break;
+		case 1:
+			std::cout << "Redirect Datagram for the Host";
+			break;
+		case 2:
+			std::cout << "Redirect Datagram for the ToS & network";
+			break;
+		case 3:
+			std::cout << "Redirect Datagram for the ToS & host";
+			break;
+		default:
+			std::cout << "Unknown code";
+			break;
+		}
+		std::cout << ')';
+	}
+	else if (static_cast<int>(icmp_h->type) == 8 && static_cast<int>(icmp_h->code) == 0) {
+		std::cout << "Echo Request";
+	}
+	else if (static_cast<int>(icmp_h->type) == 9 && static_cast<int>(icmp_h->code) == 0) {
+		std::cout << "Router Advertisement";
+	}
+	else if (static_cast<int>(icmp_h->type) == 10 && static_cast<int>(icmp_h->code) == 0) {
+		std::cout << "Router Solicitation";
+	}
+	else if (static_cast<int>(icmp_h->type) == 11) {
+		std::cout << "Time Exceeded (";
+		switch (static_cast<int>(icmp_h->code)) {
+		case 0:
+			std::cout << "TTL expired in transit";
+			break;
+		case 1:
+			std::cout << "Fragment reassembly time exceeded";
+			break;
+		default:
+			std::cout << "Unknown code";
+			break;
+		}
+		std::cout << ')';
+	}
+	else if (static_cast<int>(icmp_h->type) == 11) {
+	std::cout << "Parameter Problem: Bad IP header (";
+	switch (static_cast<int>(icmp_h->code)) {
+	case 0:
+		std::cout << "Pointer indicates the error";
+		break;
+	case 1:
+		std::cout << "Missing a required option";
+		break;
+	case 2:
+		std::cout << "Bad length";
+		break;
+	default:
+		std::cout << "Unknown code";
+		break;
+	}
+	std::cout << ')';
+    }
+	else if (static_cast<int>(icmp_h->type) == 13 && static_cast<int>(icmp_h->code) == 0) {
+	std::cout << "Timestamp";
+	}
+	else if (static_cast<int>(icmp_h->type) == 14 && static_cast<int>(icmp_h->code) == 0) {
+	std::cout << "Timestamp Reply";
+	}
+	else if (static_cast<int>(icmp_h->type) == 40) {
+	std::cout << "Photuris, Security failures";
+	}
+	else if (static_cast<int>(icmp_h->type) == 42 && static_cast<int>(icmp_h->code) == 0) {
+	std::cout << "Extended Echo Request";
+	}
+	else if (static_cast<int>(icmp_h->type) == 43) {
+	std::cout << "Extended Echo Reply (";
+	switch (static_cast<int>(icmp_h->code)) {
+	case 0:
+		std::cout << "No Error";
+		break;
+	case 1:
+		std::cout << "Malformed Query";
+		break;
+	case 2:
+		std::cout << "No Such Interface";
+		break;
+	case 3:
+		std::cout << "No Such Table Entry";
+		break;
+	case 4:
+		std::cout << "Multiple Interfaces Satisfy Query";
+		break;
+	default:
+		std::cout << "Unknown code";
+		break;
+	}
+	std::cout << ')';
+	}
+	else {
+	std::cout << "unknown type";
+    }
 	std::cout << std::endl;
 }
 
 size_t packet_num = 0;
 
 /* Callback function invoked by libpcap for every incoming packet */
-void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char *pkt_data) {
+void packet_handler(uint8_t *dump, const struct pcap_pkthdr *header, const uint8_t *pkt_data) {
 	struct tm ltime;
 	char timestr[16];
 	ethernet_header* eth_h;
@@ -198,7 +375,7 @@ void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char
 	//ipv4
 	if (eth_h->protocol_type == 8) {
 		ipv4_header* ip_h = (ipv4_header *)(pkt_data + 14); //length of ethernet header
-		u_int ip_header_len = (ip_h->ver_ihl & 0xf) * 4;
+		uint32_t ip_header_len = (ip_h->ver_ihl & 0xf) * 4;
 		std::cout << "\nInternet Protocol v. 4, ";
 		ip_h->saddr.print_ip_addr();
 		std::cout << " -> ";
@@ -213,7 +390,7 @@ void packet_handler(u_char *dump, const struct pcap_pkthdr *header, const u_char
 		}
 		//icmp
 		else if (static_cast<int>(ip_h->proto) == 1) {
-			std::cout << "\nicmp\n";
+			parce_icmp(pkt_data, ip_header_len);
 		}
 		//igmp
 		else if (static_cast<int>(ip_h->proto) == 2) {
@@ -270,7 +447,7 @@ int filter_on(pcap_if_t* device, pcap_t* handle) {
 		netmask = 0xffffff;
 
 	//compile the filter
-	if (pcap_compile(handle, &fcode, "igmp", 1, netmask) < 0) {
+	if (pcap_compile(handle, &fcode, "icmp", 1, netmask) < 0) {
 		std::cerr << "\nUnable to compile the packet filter. Check the syntax.\n";
 		return -1;
 	}
@@ -285,7 +462,7 @@ int filter_on(pcap_if_t* device, pcap_t* handle) {
 
 int main() {
 	setlocale(LC_ALL, "Rus");
-	//std::cout << sizeof(u_int) << ' ' << sizeof(udp_header) << '\n';
+	//std::cout << sizeof(uint32_t) << ' ' << sizeof(udp_header) << '\n';
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
 	int inum = 0;
@@ -374,6 +551,6 @@ int main() {
 
 	std::cout << "\nlistening on " << d->description << "...\n\n";
 	pcap_freealldevs(alldevs);
-	pcap_loop(adhandle, 0, packet_handler, (unsigned char *)dumpfile);
+	pcap_loop(adhandle, 0, packet_handler, (uint8_t *)dumpfile);
 	return 0;
 }
