@@ -50,7 +50,6 @@ void dispatcher_handler(u_char *temp1, const struct pcap_pkthdr *header, const u
 int processing(char* source) {
 	pcap_t *fp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-
 	/* Open the capture file */
 	if ((fp = pcap_open_offline(source,			 // name of the device
 		errbuf			 // error buffer
@@ -58,9 +57,7 @@ int processing(char* source) {
 		std::cerr << "\nUnable to open the file " << source << '\n';
 		return -1;
 	}
-
 	// read and dispatch packets until EOF is reached
 	pcap_loop(fp, 0, dispatcher_handler, NULL);
-
 	return 0;
 }
