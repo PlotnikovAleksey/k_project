@@ -652,15 +652,15 @@ size_t packet_num = 0;
 
 /* Callback function invoked by libpcap for every incoming packet */
 void packet_handler(uint8_t *dump, const struct pcap_pkthdr *header, const uint8_t *pkt_data) {
-	struct tm ltime;
+	struct tm* ltime;
 	char timestr[16];
 	ethernet_header* eth_h;
 	time_t local_tv_sec;
 	pcap_dump(dump, header, pkt_data);
 	/* convert the timestamp to readable format */
 	local_tv_sec = header->ts.tv_sec;
-	localtime_s(&ltime, &local_tv_sec);
-	strftime(timestr, sizeof(timestr), "%H:%M:%S", &ltime);
+	ltime = localtime(&local_tv_sec);
+	strftime(timestr, sizeof(timestr), "%H:%M:%S", ltime);
 	std::cout << ++packet_num << ") Capture time is " << timestr << ',' << " length of the packet: " << header->len << std::endl;
 	eth_h = (ethernet_header *)(pkt_data);
 	std::cout << "Ethernet, Scr: ";
@@ -776,7 +776,7 @@ int filter_on(pcap_if_t* device, pcap_t* handle, char* filter) {
 	return 0;
 }
 
-int sniffing() {
+int main() {
 	setlocale(LC_ALL, "Rus");
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
