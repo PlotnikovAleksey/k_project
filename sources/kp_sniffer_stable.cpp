@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <iomanip>
 #include <pcap.h>
-#include <tchar.h>
+#include <stdint.h>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -754,12 +754,15 @@ void packet_handler(uint8_t *dump, const struct pcap_pkthdr *header, const uint8
 }
 
 int filter_on(pcap_if_t* device, pcap_t* handle, char* filter) {
+	bpf_u_int32 subnet;
 	bpf_u_int32 netmask;
+	char errbuf[PCAP_ERRBUF_SIZE];
 	struct bpf_program fcode;
-	if (device->addresses != NULL)
-		netmask = ((struct sockaddr_in *)(device->addresses->netmask))->sin_addr.S_un.S_addr;
-	else
-		netmask = 0xffffff;
+	if (pcap_lookupnet(device->name, &subnet, &netmask, errbuf) == -1) {
+		std::cerr << "Can't get netmask for device " << device->description << "\n";
+		subnet = 0;
+		netmask = 0;
+	}
 	//compile the filter
 	if (pcap_compile(handle, &fcode, filter, 1, netmask) < 0) {
 		std::cerr << "\nUnable to compile the packet filter. Check the syntax.\n";
