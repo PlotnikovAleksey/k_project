@@ -7,7 +7,6 @@ option(BUILD_TESTS "Build tests" OFF)
 
 project(analysis_form_dump)
 
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter -fsanitize=address")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter")
 
 set(LIBPCAP ${CMAKE_CURRENT_SOURCE_DIR}/libpcap)  
@@ -42,18 +41,10 @@ set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
 link_directories(${LIBPCAP})
 include_directories(${LIBPCAP})
 
-add_executable(test
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/simple.cpp
-)
-
-target_link_libraries(test kp_analysis_from_dump)
-target_link_libraries(test cpppcap)
-target_link_libraries(test pcap)
-
-#if(BUILD_TESTS)
-#        enable_testing()
-#        add_subdirectory(third-party/gtest)
-#        add_executable(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
-#        target_link_libraries(tests exmpl gtest_main)
-#        add_test(NAME Test1 COMMAND tests)
-#endif()
+if(BUILD_TESTS)
+        enable_testing()
+        add_subdirectory(third-party/gtest)
+        add_executable(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
+        target_link_libraries(tests kp_analysis_from_dump cpppcap pcap gtest_main)
+        add_test(NAME it_is_real COMMAND tests)
+endif()
