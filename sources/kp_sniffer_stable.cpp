@@ -19,7 +19,6 @@ uint16_t ntoh(uint16_t aim) {
 	return first | second;
 }
 
-
 /* 6 bytes MAC address */
 class mac_address {
 public:
@@ -764,15 +763,10 @@ int filter_on(pcap_if_t* device, pcap_t* handle, char* filter) {
 		netmask = 0;
 	}
 	//compile the filter
-	if (pcap_compile(handle, &fcode, filter, 1, netmask) < 0) {
-		std::cerr << "\nUnable to compile the packet filter. Check the syntax.\n";
+	if (pcap_compile(handle, &fcode, filter, 1, netmask) < 0)
 		return -1;
-	}
 	//set the filter
-	if (pcap_setfilter(handle, &fcode) < 0) {
-		std::cerr << "\nError setting the filter.\n";
-		return -1;
-	}
+	pcap_setfilter(handle, &fcode);
 	return 0;
 }
 
@@ -851,9 +845,9 @@ int main() {
 			std::cout << "Enter filter\'s options: ";
 			char user_filter[128];
 			std::cin.getline(user_filter, 128);
-			if (filter_on(d, adhandle, user_filter) == -1) {
-				pcap_freealldevs(alldevs);
-				return -1;
+			while (filter_on(d, adhandle, user_filter) == -1) {
+				std::cout << "\nUnable to compile the packet filter. Check the syntax.\nEnter filter\'s options: ";
+				std::cin.getline(user_filter, 128);
 			}
 			break;
 		}
