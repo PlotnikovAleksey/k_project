@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <stdint.h>
 
 #define LINE_LEN 16
 
