@@ -772,7 +772,7 @@ void dispatcher_handler(u_char *dump, const struct pcap_pkthdr *header,
   std::cout << "\n\nAll data in ascii:\n" << data << "\n\n";
 }
 
-void processing(char *source) {
+void processing(const char *source) {
   pcap_t *handle;
   char errbuf[PCAP_ERRBUF_SIZE];
   /* Open the capture file */
@@ -784,4 +784,5 @@ void processing(char *source) {
   }
   // read and dispatch packets until EOF is reached
   pcap_loop(handle, 0, dispatcher_handler, NULL);
+  packet_num = 0;
 }
