@@ -1,4 +1,6 @@
-﻿#include <gtest/gtest.h>
+﻿// Copyright 2019 Plotnikov Aleksey <alex280201@gmail.com>
+
+#include <gtest/gtest.h>
 #include <kp_analysis_from_dump.hpp>
 
 TEST(Sniffer, ARP) { processing("dumps/arp_dump.txt"); }
