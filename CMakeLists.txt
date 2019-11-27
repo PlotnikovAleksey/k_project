@@ -7,22 +7,44 @@ option(BUILD_TESTS "Build tests" OFF)
 
 project(analysis_form_dump)
 
-include(FindPCAP.cmake)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter")
 
-# ${CMAKE_CURRENT_SOURCE_DIR}/cmakefile/
+set(LIBPCAP ${CMAKE_CURRENT_SOURCE_DIR}/libpcap)  
+set(LIBPCAP_STATIC ${CMAKE_CURRENT_SOURCE_DIR}/libpcap/libpcap.a)
 
-add_executable(analysis_form_dump STATIC
+add_custom_command(
+    OUTPUT  ${LIBPCAP_STATIC}
+    COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
+)
+
+add_library(kp_analysis_from_dump STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_analysis_from_dump.cpp
 )
 
-target_link_libraries(analysis_form_dump ${PCAP_LIBRARY})
+add_library(sniffer STATIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_sniffer_stable.cpp
+)
 
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(kp_analysis_from_dump 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
-#if(BUILD_TESTS)
-#        enable_testing()
-#        add_subdirectory(third-party/gtest)
-#        add_executable(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
-#        target_link_libraries(tests exmpl gtest_main)
-#        add_test(NAME Test1 COMMAND tests)
-#endif()
+target_include_directories(sniffer 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+add_library (cpppcap STATIC ${LIBPCAP_STATIC})
+target_link_libraries(cpppcap kp_analysis_from_dump)
+target_link_libraries(cpppcap sniffer)
+add_library (pcap STATIC IMPORTED GLOBAL)
+set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
+link_directories(${LIBPCAP})
+include_directories(${LIBPCAP})
+
+if(BUILD_TESTS)
+        enable_testing()
+        add_subdirectory(third-party/gtest)
+        add_executable(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
+        target_link_libraries(tests kp_analysis_from_dump cpppcap pcap gtest_main)
+        add_test(NAME it_is_real COMMAND tests)
+endif()

@@ -6,6 +6,11 @@ jobs:
   include:
   - name: "building"
     script:
-    - cmake -H. -B_build -DBUILD_TESTS=ON
+    - cmake -H. -B_build -DCMAKE_BUILD_TYPE=Release
     - cmake --build _build
-    - cmake --build _build --target analysis_form_dump
+
+  - name: "tests"
+    script:
+    - cmake -H. -B_build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
+    - cmake --build _build --target tests
+    - ./_build/tests
