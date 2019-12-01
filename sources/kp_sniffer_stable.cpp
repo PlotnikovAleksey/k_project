@@ -1,6 +1,6 @@
 ﻿// Copyright 2019 Plotnikov Aleksey <alex280201@gmail.com>
 
-#include <kp_sniffer_stable.hpp>
+#include "kp_sniffer_stable.hpp"
 
 size_t packet_num = 0;
 
@@ -35,7 +35,7 @@ int filter_on(pcap_if_t *device, pcap_t *handle, char *filter) {
   return 0;
 }
 
-int sniffing(char *user_filter, uint32_t packet_num) {
+int sniffing(char *user_filter, uint32_t packet_amount) {
   setlocale(LC_ALL, "Rus");
   pcap_if_t *alldevs;
   pcap_if_t *d;
@@ -100,6 +100,7 @@ int sniffing(char *user_filter, uint32_t packet_num) {
   }
   std::cout << "\nlistening on " << d->description << "...\n\n";
   pcap_freealldevs(alldevs);
-  pcap_loop(adhandle, packet_num, packet_handler, (uint8_t *)dumpfile);
+  pcap_loop(adhandle, packet_amount, packet_handler, (uint8_t *)dumpfile);
+  packet_num = 0;
   return 0;
 }
