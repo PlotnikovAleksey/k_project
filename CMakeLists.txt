@@ -10,12 +10,6 @@ project(CS_sniffer)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter")
 
 set(LIBPCAP ${CMAKE_CURRENT_SOURCE_DIR}/libpcap)  
-#set(LIBPCAP_STATIC ${CMAKE_CURRENT_SOURCE_DIR}/libpcap/libpcap.a)
-
-#add_custom_command(
-#    OUTPUT  ${LIBPCAP_STATIC}
-#    COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
-#)
 
 find_package(Boost 1.58.0 REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -61,14 +55,6 @@ target_link_libraries(server kp_analysis_from_dump)
 target_link_libraries(client sniffer)
 target_link_libraries(server ${Boost_LIBRARIES})
 target_link_libraries(client ${Boost_LIBRARIES})
-#include_directories(include)
-
-#add_library (cpppcap STATIC ${LIBPCAP_STATIC})
-#target_link_libraries(cpppcap kp_analysis_from_dump)
-#target_link_libraries(cpppcap sniffer)
-#add_library (pcap STATIC IMPORTED GLOBAL)
-#set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
-#link_directories(${LIBPCAP})
 
 include_directories(${LIBPCAP})
 
@@ -81,8 +67,3 @@ if(BUILD_TESTS)
         target_link_libraries(tests kp_analysis_from_dump)
         add_test(NAME it_is_real COMMAND tests)
 endif()
-
-#target_link_libraries(cpppcap server)
-#target_link_libraries(cpppcap client)
-#target_link_libraries(server kp_analysis_from_dump)
-#target_link_libraries(client sniffer)
