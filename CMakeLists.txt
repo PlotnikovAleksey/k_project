@@ -10,12 +10,12 @@ project(CS_sniffer)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter")
 
 set(LIBPCAP ${CMAKE_CURRENT_SOURCE_DIR}/libpcap)  
-set(LIBPCAP_STATIC ${CMAKE_CURRENT_SOURCE_DIR}/libpcap/libpcap.a)
+#set(LIBPCAP_STATIC ${CMAKE_CURRENT_SOURCE_DIR}/libpcap/libpcap.a)
 
-add_custom_command(
-    OUTPUT  ${LIBPCAP_STATIC}
-    COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
-)
+#add_custom_command(
+#    OUTPUT  ${LIBPCAP_STATIC}
+#    COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
+#)
 
 find_package(Boost 1.58.0 REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -52,22 +52,33 @@ target_include_directories(client
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+add_subdirectory(libpcap)
+target_link_libraries(kp_analysis_from_dump pcap)
+target_link_libraries(sniffer pcap)
+target_link_libraries(server pcap)
+target_link_libraries(client pcap)
+target_link_libraries(server kp_analysis_from_dump)
+target_link_libraries(client sniffer)
+target_link_libraries(server ${Boost_LIBRARIES})
+target_link_libraries(client ${Boost_LIBRARIES})
 #include_directories(include)
 
-add_library (cpppcap STATIC ${LIBPCAP_STATIC})
-target_link_libraries(cpppcap kp_analysis_from_dump)
-target_link_libraries(cpppcap sniffer)
+#add_library (cpppcap STATIC ${LIBPCAP_STATIC})
+#target_link_libraries(cpppcap kp_analysis_from_dump)
+#target_link_libraries(cpppcap sniffer)
+#add_library (pcap STATIC IMPORTED GLOBAL)
+#set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
+#link_directories(${LIBPCAP})
 
-add_library (pcap STATIC IMPORTED GLOBAL)
-set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
-link_directories(${LIBPCAP})
 include_directories(${LIBPCAP})
 
 if(BUILD_TESTS)
         enable_testing()
         add_subdirectory(third-party/gtest)
         add_executable(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
-        target_link_libraries(tests kp_analysis_from_dump cpppcap pcap gtest_main)
+        target_link_libraries(tests gtest_main)
+        target_link_libraries(tests pcap)
+        target_link_libraries(tests kp_analysis_from_dump)
         add_test(NAME it_is_real COMMAND tests)
 endif()
 
@@ -75,6 +86,3 @@ endif()
 #target_link_libraries(cpppcap client)
 #target_link_libraries(server kp_analysis_from_dump)
 #target_link_libraries(client sniffer)
-#target_link_libraries(server ${Boost_LIBRARIES})
-#target_link_libraries(client ${Boost_LIBRARIES})
-
