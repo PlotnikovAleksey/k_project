@@ -1,6 +1,6 @@
 ﻿// Copyright 2019 Plotnikov Aleksey <alex280201@gmail.com>
 
-#include <kp_sniffer_stable.hpp>
+#include "kp_sniffer_stable.hpp"
 
 size_t packet_num = 0;
 
@@ -35,7 +35,7 @@ int filter_on(pcap_if_t *device, pcap_t *handle, char *filter) {
   return 0;
 }
 
-int sniffing() {
+int sniffing(char *user_filter, uint32_t packet_amount) {
   setlocale(LC_ALL, "Rus");
   pcap_if_t *alldevs;
   pcap_if_t *d;
@@ -58,6 +58,7 @@ int sniffing() {
 
   if (d == nullptr) {
     std::cout << "\nThere are no valid interfaces.\n";
+    pcap_freealldevs(alldevs);
     return -1;
   }
 
@@ -77,7 +78,7 @@ int sniffing() {
     return -1;
   }
 
-  dumpfile = pcap_dump_open(adhandle, "dump.txt");
+  dumpfile = pcap_dump_open(adhandle, "dump.ydp");
 
   /* Check the link layer. We support only Ethernet. */
   if (pcap_datalink(adhandle) != 1) {
@@ -87,35 +88,19 @@ int sniffing() {
   }
 
   // Activating the filter if needed
+  char *used_filter;
   char base_filter[] = "ip || ip6 || arp";
-  std::cout << "Do you want to use filter?\n";
-  while (true) {
-    std::cout << "Y/y for \"yes\", N/n for \"no\": ";
-    std::string use_filter;
-    std::getline(std::cin, use_filter);
-    if (use_filter == "Y" || use_filter == "y") {
-      std::cout << "Enter filter\'s options: ";
-      char user_filter[128];
-      std::cin.getline(user_filter, 128);
-      while (filter_on(d, adhandle, user_filter) == -1) {
-        std::cout << "\nUnable to compile the packet filter. Check the "
-                     "syntax.\nEnter filter\'s options: ";
-        std::cin.getline(user_filter, 128);
-      }
-      break;
-    } else if (use_filter == "N" || use_filter == "n") {
-      if (filter_on(d, adhandle, base_filter) == -1) {
-        pcap_freealldevs(alldevs);
-        return -1;
-      }
-      break;
-    }
+  if (user_filter == nullptr)
+    used_filter = base_filter;
+  else
+    used_filter = user_filter;
+  if (filter_on(d, adhandle, used_filter) == -1) {
+    pcap_freealldevs(alldevs);
+    return 2;
   }
-  std::cout << "Set how many packets you want to capture: ";
-  int num;
-  std::cin >> num;
   std::cout << "\nlistening on " << d->description << "...\n\n";
   pcap_freealldevs(alldevs);
-  pcap_loop(adhandle, num, packet_handler, (uint8_t *)dumpfile);
+  pcap_loop(adhandle, packet_amount, packet_handler, (uint8_t *)dumpfile);
+  packet_num = 0;
   return 0;
 }

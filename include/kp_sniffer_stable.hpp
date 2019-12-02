@@ -20,6 +20,6 @@ void packet_handler(uint8_t* dump, const struct pcap_pkthdr* header,
 
 int filter_on(pcap_if_t* device, pcap_t* handle, char* filter);
 
-int sniffing();
+int sniffing(char* user_filter, uint32_t packet_num);
 
 #endif  // INCLUDE_SNIFFER_HPP_
