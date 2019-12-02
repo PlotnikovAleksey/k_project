@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_TESTS "Build tests" OFF)
 
-project(analysis_form_dump)
+project(CS_sniffer)
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -g -std=c++1y -Wall -Wextra -Wno-unused-parameter")
 
@@ -36,7 +36,23 @@ add_library(client STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/client.cpp
 )
 
-include_directories(include)
+target_include_directories(kp_analysis_from_dump 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_include_directories(sniffer 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_include_directories(server 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_include_directories(client 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+#include_directories(include)
 
 add_library (cpppcap STATIC ${LIBPCAP_STATIC})
 target_link_libraries(cpppcap kp_analysis_from_dump)
@@ -51,7 +67,7 @@ if(BUILD_TESTS)
         enable_testing()
         add_subdirectory(third-party/gtest)
         add_executable(tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
-        target_link_libraries(tests kp_analysis_from_dump gtest_main cpppcap pcap ${LIBPCAP})
+        target_link_libraries(tests kp_analysis_from_dump cpppcap pcap gtest_main)
         add_test(NAME it_is_real COMMAND tests)
 endif()
 
