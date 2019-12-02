@@ -24,7 +24,7 @@ void delete_back_whitespaces(std::string& s) {
 		s.erase(s.size() - 1, 1);
 }
 
-std::recursive_mutex cs;
+boost::recursive_mutex cs;
 boost::asio::io_service service;
 
 //initialization of vector of clients
@@ -138,7 +138,7 @@ void accept_thread() {
 	while (true) {
 		client_ptr new_request(new talk_to_client);
 		acceptor.accept(new_request->sock());
-		std::scoped_lock lk(cs);
+		boost::recursive_mutex::scoped_lock lk(cs);
 		std::cout << "New client accepted\n";
 		std::cout << "New client sock " << new_request->sock().remote_endpoint().address().to_string() << std::endl;
 		talk_to_client::clients_list.push_back(new_request);
@@ -148,7 +148,7 @@ void accept_thread() {
 void handle_clients_thread() {
 	while (true) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		std::scoped_lock lk(cs);
+		boost::recursive_mutex::scoped_lock lk(cs);
 		for (auto current = talk_to_client::clients_list.begin(), end = talk_to_client::clients_list.end(); current != end; ++current)
 			(*current)->answer_to_request();
 		talk_to_client::clients_list.erase(std::remove_if(talk_to_client::clients_list.begin(), talk_to_client::clients_list.end(),
@@ -160,7 +160,7 @@ void message_to_client() {
 	while (true) {
 		std::string mes;
 		std::getline(std::cin, mes);
-		std::scoped_lock lk(cs);
+		boost::recursive_mutex::scoped_lock lk(cs);
 		if (mes.size() == 0) {
 			std::cout << "Empty input\n";
 			continue;
