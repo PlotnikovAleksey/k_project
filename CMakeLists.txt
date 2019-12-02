@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_TESTS "Build tests" OFF)
@@ -45,8 +45,8 @@ target_link_libraries(cpppcap server)
 target_link_libraries(cpppcap client)
 target_link_libraries(server kp_analysis_from_dump)
 target_link_libraries(client sniffer)
-target_link_libraries(server Boost::system)
-target_link_libraries(client Boost::system)
+target_link_libraries(server ${Boost_LIBRARIES})
+target_link_libraries(client ${Boost_LIBRARIES})
 add_library (pcap STATIC IMPORTED GLOBAL)
 set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
 link_directories(${LIBPCAP})
