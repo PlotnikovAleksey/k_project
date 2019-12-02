@@ -17,8 +17,8 @@ add_custom_command(
     COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
 )
 
-#find_package(Boost 1.58.0 REQUIRED)
-#include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+find_package(Boost 1.58.0 REQUIRED)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 add_library(kp_analysis_from_dump STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_analysis_from_dump.cpp
