@@ -17,6 +17,10 @@ add_custom_command(
     COMMAND cwd=$(pwd) && cd ${LIBPCAP} && pwd && ./configure --enable-dbus=no --enable-bluetooth=no --enable-usb=no && make && cd ${cwd}
 )
 
+find_package(Boost CONFIG REQUIRED system)
+#find_package(Boost 1.65.1 REQUIRED)
+#include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
 add_library(kp_analysis_from_dump STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_analysis_from_dump.cpp
 )
@@ -25,17 +29,25 @@ add_library(sniffer STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/kp_sniffer_stable.cpp
 )
 
-target_include_directories(kp_analysis_from_dump 
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+add_library(server STATIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/server.cpp
 )
 
-target_include_directories(sniffer 
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+add_library(client STATIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/client.cpp
 )
+
+include_directories(include)
 
 add_library (cpppcap STATIC ${LIBPCAP_STATIC})
 target_link_libraries(cpppcap kp_analysis_from_dump)
 target_link_libraries(cpppcap sniffer)
+target_link_libraries(cpppcap server)
+target_link_libraries(cpppcap client)
+target_link_libraries(server kp_analysis_from_dump)
+target_link_libraries(client sniffer)
+target_link_libraries(server Boost::system)
+target_link_libraries(client Boost::system)
 add_library (pcap STATIC IMPORTED GLOBAL)
 set_target_properties(pcap PROPERTIES IMPORTED_LOCATION ${LIBPCAP_STATIC})
 link_directories(${LIBPCAP})
