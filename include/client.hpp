@@ -12,6 +12,8 @@
 #include <fstream>
 #include "kp_sniffer_stable.hpp"
 
+bool File_Exists(std::string filePath);
+
 class Client {
 private:
 	boost::asio::ip::tcp::socket sock_;
