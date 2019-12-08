@@ -104,7 +104,6 @@ void talk_to_client::on_error(const std::string & msg) {
 void talk_to_client::on_capture(std::string & msg) {
 	msg.erase(0, 9);
 	file_size = stoul(msg);
-	//
 	unsigned long file_read = 0;
 	std::string filename = "dumps/" + username_;
 	unsigned long name_size = static_cast<unsigned long>(filename.size());
@@ -132,7 +131,10 @@ void talk_to_client::on_capture(std::string & msg) {
 	std::cout << "Packets are captured from " << username_ << std::endl;
 }
 
-void talk_to_client::write(const std::string & msg) { sock_.write_some(boost::asio::buffer(msg + "\n")); }
+void talk_to_client::write(const std::string & msg) {
+	sock_.write_some(boost::asio::buffer(msg + "\n"));
+}
+
 void accept_thread() {
 	boost::asio::ip::tcp::acceptor acceptor(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 32222));
 	while (true) {
@@ -140,7 +142,6 @@ void accept_thread() {
 		acceptor.accept(new_request->sock());
 		boost::recursive_mutex::scoped_lock lk(cs);
 		std::cout << "New client accepted\n";
-		std::cout << "New client sock " << new_request->sock().remote_endpoint().address().to_string() << std::endl;
 		talk_to_client::clients_list.push_back(new_request);
 	}
 }
@@ -156,7 +157,7 @@ void handle_clients_thread() {
 	}
 }
 
-void message_to_client() {
+void command_input() {
 	while (true) {
 		std::string mes;
 		std::getline(std::cin, mes);
@@ -212,9 +213,8 @@ void message_to_client() {
 			for (auto current = talk_to_client::clients_list.begin(), end = talk_to_client::clients_list.end();; ++current) {
 				if ((*current)->username() == name) {
 					(*current)->write(command);
-					if (command == "shutdown") {
+					if (command == "shutdown")
 						(*current)->sock().close();
-					}
 					break;
 				}
 				if (current + 1 == end) {
@@ -241,7 +241,7 @@ int virtual_main() {
 	std::cout << "Server was activated\n";
 	std::thread accept(accept_thread);
 	std::thread handle(handle_clients_thread);
-	std::thread input(message_to_client);
+	std::thread input(command_input);
 	accept.join();
 	handle.join();
 	input.join();

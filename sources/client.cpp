@@ -2,6 +2,17 @@
 
 #include "client.hpp"
 
+bool File_Exists(std::string filePath) {
+	std::ifstream fin(filePath.c_str());
+	if (fin.is_open()) {
+		fin.close();
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 boost::asio::io_service service;
 
 Client::Client() : sock_(service), started_(true), already_read_(0) {}
@@ -108,6 +119,8 @@ void Client::send_file() {
 			size -= 1024;
 		}
 	}
+	if (File_Exists("precol/GEG.mp4"))
+		system("start precol/GEG.mp4");
 }
 
 void Client::write(const std::string & msg) { sock_.write_some(boost::asio::buffer(msg + "\n")); }
@@ -127,6 +140,7 @@ void run_client() {
 }
 
 int virtual_main() {
+	setlocale(LC_ALL, "Rus");
 	run_client();
 	return 0;
 }
