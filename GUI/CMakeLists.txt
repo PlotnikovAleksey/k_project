@@ -67,6 +67,7 @@ target_link_libraries(server pcap)
 target_link_libraries(server ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
 target_link_libraries(emitter ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
 target_link_libraries(mainwindow ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
+target_link_libraries(kp_analysis_from_dump ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
 
 add_executable(exec sources/main.cpp)
 
