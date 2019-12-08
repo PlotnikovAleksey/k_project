@@ -1,13 +1,17 @@
-# Курсовой проект по ТиМП
-[![Build Status](https://travis-ci.org/PlotnikovAleksey/k_project.svg?branch=master)](https://travis-ci.org/PlotnikovAleksey/k_project)
+# Курсовой проект по ТиМП [![Build Status](https://travis-ci.org/PlotnikovAleksey/k_project.svg?branch=master)](https://travis-ci.org/PlotnikovAleksey/k_project)
+ы
 Проект представляет собой средство мониторинга сетевого трафика ЛВС. Реализация представлена с использованием архитектуру «Клиент-Сервер».
 При включении клиентского приложения происходит автоматическое подключение к серверу. Клиент содержит у себя на борту небольшой сниффер, который сохраняет перехваченный трафик в дамп файле dump.ydp и сразу передаётся серверу. На сервере же представлен анализатор перехваченного трафика.
+
+Графический интерфейс выглядит следующим образом
 ![server GUI](img/GUI.png "Графический интерфейс")
+
+
 #### Доступные команды:
 * analyze <*.ydp> **(анализ дамп файла)**
 * capture <amount_of_packets> [<set_filter 'filter_expression'>] <ipv4_of_target> **(захват *amount_of_packets* пакетов с возможным фильтром с выбранного устройства)**
 * shutdown <ipv4_of_target> **(Отключение выбранного устройства от сервера)**
-##### Возможные filter_expression:
+#### Возможные filter_expression:
 1. Поддерживаемые протоколы: ```ip, ip6, arp, icmp, igmp, tcp, udp```
 2. Фильтрация по порту: ```tcp port 80, udp port 25```
 3. Возможно использование логических операторов:
