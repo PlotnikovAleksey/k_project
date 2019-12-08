@@ -14,16 +14,19 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
 find_package(Boost 1.58.0 REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
-
+set(CMAKE_CXX_FLAGS "${Qt5Gui_EXECUTABLE_COMPILE_FLAGS}")
 
 include_directories(${Qt5Widgets_INCLUDES})
 include_directories(${Qt5Core_INCLUDES})
+include_directories(${Qt5Gui_INCLUDES})
 add_definitions(${Qt5Widgets_DEFINITIONS})
-add_definitions(${Qt5Core_DEFINITIONS})
+add_definitions(${Qt5Widgets_DEFINITIONS})
+add_definitions(${Qt5Gui_DEFINITIONS})
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 add_library(kp_analysis_from_dump STATIC
@@ -61,13 +64,13 @@ target_include_directories(emitter
 add_subdirectory(../libpcap ${CMAKE_CURRENT_BINARY_DIR}/pcap)
 target_link_libraries(kp_analysis_from_dump pcap)
 target_link_libraries(server pcap)
-target_link_libraries(server ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES})
-target_link_libraries(emitter ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES})
-target_link_libraries(mainwindow ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES})
+target_link_libraries(server ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
+target_link_libraries(emitter ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
+target_link_libraries(mainwindow ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
 
 add_executable(exec sources/main.cpp)
 
-target_link_libraries(exec server kp_analysis_from_dump mainwindow emitter ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES})
+target_link_libraries(exec server kp_analysis_from_dump mainwindow emitter ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
 
 include_directories(${LIBPCAP})
 
