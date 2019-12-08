@@ -53,7 +53,7 @@ target_include_directories(emitter
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-add_subdirectory(../libpcap)
+add_subdirectory(../libpcap ${CMAKE_CURRENT_BINARY_DIR}/pcap)
 target_link_libraries(kp_analysis_from_dump pcap)
 target_link_libraries(server pcap)
 target_link_libraries(server ${Boost_LIBRARIES})
