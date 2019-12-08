@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include "pcap.h"
 
 #define LINE_LEN 16
