@@ -56,8 +56,9 @@ target_include_directories(emitter
 add_subdirectory(../libpcap ${CMAKE_CURRENT_BINARY_DIR}/pcap)
 target_link_libraries(kp_analysis_from_dump pcap)
 target_link_libraries(server pcap)
-target_link_libraries(server ${Boost_LIBRARIES})
-target_link_libraries(mainwindow ${Boost_LIBRARIES})
+target_link_libraries(server ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+target_link_libraries(emitter ${Qt5Widgets_LIBRARIES})
+target_link_libraries(mainwindow ${Boost_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 
 add_executable(exec sources/main.cpp)
 
