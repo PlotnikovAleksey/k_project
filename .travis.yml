@@ -21,3 +21,8 @@ jobs:
     - cmake -H. -B_build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
     - cmake --build _build --target tests
     - ./_build/tests
+      - name: "GUI"
+    script:
+    - cd GUI
+    - cmake -H. -B_build -DCMAKE_BUILD_TYPE=Release
+    - cmake --build _build
