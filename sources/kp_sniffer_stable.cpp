@@ -3,6 +3,7 @@
 #include "kp_sniffer_stable.hpp"
 
 size_t packet_num = 0;
+int active_device = 0;
 
 /* Callback function invoked by libpcap for every incoming packet */
 void packet_handler(uint8_t *dump, const struct pcap_pkthdr *header,
@@ -10,7 +11,9 @@ void packet_handler(uint8_t *dump, const struct pcap_pkthdr *header,
   struct tm *ltime;
   char timestr[16];
   time_t local_tv_sec;
-  pcap_dump(dump, header, pkt_data);
+  if (dump != nullptr) {
+    pcap_dump(dump, header, pkt_data);
+  }
   local_tv_sec = header->ts.tv_sec;
   ltime = localtime(&local_tv_sec);
   strftime(timestr, sizeof(timestr), "%H:%M:%S", ltime);
@@ -48,13 +51,28 @@ int sniffing(char *user_filter, uint32_t packet_amount) {
     std::cerr << "Error in pcap_findalldevs: " << errbuf << std::endl;
     return -1;
   }
-
-  /* Jump to the adapter */
-  for (d = alldevs; d; d = d->next) {
-    if (static_cast<int>(std::string(d->description).find("NdisWan Adapter")) ==
-        -1)
-      break;
+  if (active_device == 0) {
+    for (d = alldevs; d != NULL; d = d->next) {
+      active_device++;
+      if (static_cast<int>(
+              std::string(d->description).find("NdisWan Adapter")) == -1 &&
+          static_cast<int>(std::string(d->description).find("LoopBack")) ==
+              -1) {
+        adhandle = pcap_open(d->name, 65536, PCAP_OPENFLAG_PROMISCUOUS, 5000,
+                             NULL, errbuf);
+        pcap_dispatch(adhandle, 5, packet_handler, nullptr);
+        if (packet_num != 0) {
+          packet_num = 0;
+          break;
+        }
+      }
+    }
   }
+
+  std::cout << "\ndev №" << active_device << '\n';
+  d = alldevs;
+  for (int i = 0; i < active_device - 1; d = d->next, i++)
+    ;
 
   if (d == nullptr) {
     std::cout << "\nThere are no valid interfaces.\n";
